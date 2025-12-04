@@ -12,7 +12,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# CORS configuration
+# CORS configuration2w3
 origins = [
     "http://localhost:5173", # Vite default port
     "http://localhost:3000",
@@ -24,6 +24,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 # Dependency
@@ -54,7 +55,7 @@ def download_monthly_report(year: int, month: int, db: Session = Depends(get_db)
     
     # Convert to DataFrame
     data = [{
-        "Date": t.date,
+        "Date": t.date.strftime('%Y-%m-%d'),
         "Type": t.type,
         "Category": t.category,
         "Description": t.description,
@@ -63,10 +64,26 @@ def download_monthly_report(year: int, month: int, db: Session = Depends(get_db)
     
     df = pd.DataFrame(data)
     
-    stream = io.StringIO()
-    df.to_csv(stream, index=False)
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Report')
+        worksheet = writer.sheets['Report']
+        # Adjust column widths
+        for column in worksheet.columns:
+            max_length = 0
+            column = [cell for cell in column]
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
+            
+    output.seek(0)
     
-    response = StreamingResponse(iter([stream.getvalue()]),
-                                 media_type="text/csv")
-    response.headers["Content-Disposition"] = f"attachment; filename=report_{year}_{month}.csv"
-    return response
+    headers = {
+        'Content-Disposition': f'attachment; filename="report_{year}_{month}.xlsx"'
+    }
+    return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

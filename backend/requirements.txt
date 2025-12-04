@@ -4,3 +4,4 @@ sqlalchemy
 pydantic
 pandas
 python-multipart
+openpyxl

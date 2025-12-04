@@ -72,19 +72,7 @@ function App() {
         const date = new Date();
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
-        try {
-            const response = await axios.get(`${API_URL}/reports/download/${year}/${month}`, {
-                responseType: 'blob',
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `report_${year}_${month}.csv`);
-            document.body.appendChild(link);
-            link.click();
-        } catch (error) {
-            console.error("Error downloading report", error);
-        }
+        window.location.href = `${API_URL}/reports/download/${year}/${month}`;
     };
 
     return (
@@ -104,45 +92,47 @@ function App() {
                 </div>
 
                 {/* Summary Cards */}
-                {report && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-green-100 rounded-full text-green-600">
-                                    <TrendingUp size={24} />
+                {
+                    report && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-green-100 rounded-full text-green-600">
+                                        <TrendingUp size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Total Income</p>
+                                        <p className="text-2xl font-bold text-gray-800">${report.total_income.toFixed(2)}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Income</p>
-                                    <p className="text-2xl font-bold text-gray-800">${report.total_income.toFixed(2)}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-red-100 rounded-full text-red-600">
+                                        <TrendingDown size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Total Expenses</p>
+                                        <p className="text-2xl font-bold text-gray-800">${report.total_expense.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-blue-100 rounded-full text-blue-600">
+                                        <DollarSign size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Balance</p>
+                                        <p className={`text-2xl font-bold ${report.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            ${report.balance.toFixed(2)}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-red-100 rounded-full text-red-600">
-                                    <TrendingDown size={24} />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Expenses</p>
-                                    <p className="text-2xl font-bold text-gray-800">${report.total_expense.toFixed(2)}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 rounded-full text-blue-600">
-                                    <DollarSign size={24} />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Balance</p>
-                                    <p className={`text-2xl font-bold ${report.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        ${report.balance.toFixed(2)}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                    )
+                }
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Add Transaction Form */}
@@ -294,8 +284,8 @@ function App() {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
